@@ -1,0 +1,34 @@
+workflows:
+  Teledax:
+    name: Teledax
+    instance_type: mac_mini_m2
+
+    environment:
+      java: 17
+        groups:
+          - android-signing # Not strictly needed for debug builds
+
+    triggering:
+      events:
+        - push
+
+    scripts:
+      - name: Set Android SDK location
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+
+      - name: Make gradlew executable
+        script: |
+          chmod +x ./gradlew
+
+      - name: Build Android App (Debug)
+        script: |
+          ./gradlew clean
+          ./gradlew assembleDebug
+          ./gradlew bundleDebug
+
+    artifacts:
+      - app/build/outputs/apk/debug/**/*.apk
+      - app/build/outputs/bundle/debug/**/*.aab
+      - app/build/outputs/mapping/debug/**/*.txt
+      - /tmp/codemagic_logs/*.log
